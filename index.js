@@ -24,19 +24,23 @@ app.get('/shopify', (req,res)=>{
     const shop = req.query.shop
     console.log(shop)
     if(shop){
+        const shopRegex = /^([\w-]+)\.myshopify\.com/i
+        const shopName = shopRegex.exec(shop)[1]
+        console.log(shop, shopName)
         const state = shopifyToken.generateNonce();
+        const url = shopifyToken.generateAuthUrl(shopName, scopes, state)
         console.log('initial state:',state)
         const redirectUri = forwardingAddress + '/shopify/callback';
         const installUrl = 'https://' + shop + '/admin/oauth/authorize?client_id=' + apiKey + '&scope=' + scope + '&state' + state + '&redirect_uri=' + redirectUri;
 
         res.cookie('state',state);
-        res.redirect(installUrl);
+        res.redirect(url);
     }else{
         return res.status(400).send('Missing shop paramater')
     }
 })
 app.get('/shopify/callback', async (req,res) => {
-    const { shop, hmac, code, state} = req.query;
+    const { shop, hmac, code, state } = req.query
     const stateCookie = cookie.parse(req.headers.cookie).state;
     console.log('stateCookie:',stateCookie)
     console.log('state:', state)
