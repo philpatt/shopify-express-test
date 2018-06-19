@@ -34,14 +34,16 @@ app.get('/shopify', (req,res)=>{
         return res.status(400).send('Missing shop paramater')
     }
 })
-app.get('/shopify/callback', (req,res)=>{
+app.get('/shopify/callback', async (req,res) => {
     const { shop, hmac, code, state} = req.query;
     const stateCookie = cookie.parse(req.headers.cookie).state;
 
     if(state !== stateCookie){
         return res.status(403).send('Request origin cannot be verified')
     }
-    if (shop && hmac && code){
+    if(!shop || !hmac || !code) {
+        res.status(400).send('Require parameters missing');
+    } else if (shop && hmac && code) {
         const map = Object.assign({}, req.query);
         delete map['hmac'];
         const message = querystring.stringify(map);
@@ -53,9 +55,15 @@ app.get('/shopify/callback', (req,res)=>{
         if(generateHash !== hmac){
             return res.status(400).send('HMAC validation failed!');
         }
-        res.status(200).send('HMAC validated');//replace with api call
-    } else {
-        res.status(400).send('Require parameters missing');
+        const accessToken = await shopifyToken.getAccessToken(shop,code)
+        const shopRequestUrl = 'https://' + shop + '/admin/shop.json';
+        const shopRequestHeaders = {'X-Shopify-Access-Token': accessToken}
+        try {
+            const shopResponse = await request.tget(shopRequestUrl, { headers: shopRequestHeaders })
+            res.status(200).end(shopResponse)
+        } catch(error){
+            res.status(error.statusCode).send(error.error_description)
+        }
     }
 })
 app.listen(process.env.PORT || 3000, () => {
