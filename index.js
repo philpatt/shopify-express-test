@@ -28,7 +28,7 @@ app.get('/shopify', (req,res)=>{
         const shopName = shopRegex.exec(shop)[1]
         console.log(shop, shopName)
         const state = shopifyToken.generateNonce();
-        const url = shopifyToken.generateAuthUrl(shopName, scopes, state)
+        const url = shopifyToken.generateAuthUrl(shopName, scope, state)
         console.log('initial state:',state)
         const redirectUri = forwardingAddress + '/shopify/callback';
         const installUrl = 'https://' + shop + '/admin/oauth/authorize?client_id=' + apiKey + '&scope=' + scope + '&state' + state + '&redirect_uri=' + redirectUri;
