@@ -37,7 +37,7 @@ app.get('/shopify', (req,res)=>{
         return res.status(400).send('Missing shop paramater')
     }
 })
-app.get('/shopify/callback', async (req,res) => {
+app.get('/shopify/callback', (req,res) => {
     const { shop, hmac, code, state } = req.query
     const stateCookie = cookie.parse(req.headers.cookie).state;
     console.log('stateCookie:',stateCookie)
@@ -62,15 +62,7 @@ app.get('/shopify/callback', async (req,res) => {
             return res.status(400).send('HMAC validation failed!');
         }
         res.status(200).send('HMAC VALIDATED!')
-        // const accessToken = await shopifyToken.getAccessToken(shop,code)
-        // const shopRequestUrl = 'https://' + shop + '/admin/shop.json';
-        // const shopRequestHeaders = {'X-Shopify-Access-Token': accessToken}
-        // try {
-        //     const shopResponse = await request.tget(shopRequestUrl, { headers: shopRequestHeaders })
-        //     res.status(200).end(shopResponse)
-        // } catch(error){
-        //     res.status(error.statusCode).send(error.error_description)
-        // }
+
     } else {
         res.status(400).send('required params missing')
     }
