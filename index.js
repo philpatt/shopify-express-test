@@ -72,7 +72,7 @@ app.get('/shopify/callback', (req,res) => {
             const apiRequestUrl = 'https://' + shop + '/admin/products.json';
 
             const apiRequestHeader = {
-                'X-Shopfify-Access-Token': accessToken
+                'X-Shopify-Access-Token': accessToken
             };
 
             request.get(apiRequestUrl, { headers: apiRequestHeader})
