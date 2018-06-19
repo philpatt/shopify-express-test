@@ -22,11 +22,9 @@ app.get('/',(req,res) => {
 })
 app.get('/shopify', (req,res)=>{
     const shop = req.query.shop
-    console.log(shop)
     if(shop){
         const shopRegex = /^([\w-]+)\.myshopify\.com/i
         const shopName = shopRegex.exec(shop)[1]
-        console.log(shop, shopName)
         const state = shopifyToken.generateNonce();
         const url = shopifyToken.generateAuthUrl(shopName, scope, state)
         console.log('initial state:',state)
@@ -48,6 +46,7 @@ app.get('/shopify/callback', async (req,res) => {
     if(state !== stateCookie){
         return res.status(403).send('Request origin cannot be verified')
     }
+
     if(!shop || !hmac || !code) {
         res.status(400).send('Require parameters missing');
     } else if (shop && hmac && code) {
@@ -62,15 +61,18 @@ app.get('/shopify/callback', async (req,res) => {
         if(generateHash !== hmac){
             return res.status(400).send('HMAC validation failed!');
         }
-        const accessToken = await shopifyToken.getAccessToken(shop,code)
-        const shopRequestUrl = 'https://' + shop + '/admin/shop.json';
-        const shopRequestHeaders = {'X-Shopify-Access-Token': accessToken}
-        try {
-            const shopResponse = await request.tget(shopRequestUrl, { headers: shopRequestHeaders })
-            res.status(200).end(shopResponse)
-        } catch(error){
-            res.status(error.statusCode).send(error.error_description)
-        }
+        res.status(200).send('HMAC VALIDATED!')
+        // const accessToken = await shopifyToken.getAccessToken(shop,code)
+        // const shopRequestUrl = 'https://' + shop + '/admin/shop.json';
+        // const shopRequestHeaders = {'X-Shopify-Access-Token': accessToken}
+        // try {
+        //     const shopResponse = await request.tget(shopRequestUrl, { headers: shopRequestHeaders })
+        //     res.status(200).end(shopResponse)
+        // } catch(error){
+        //     res.status(error.statusCode).send(error.error_description)
+        // }
+    } else {
+        res.status(400).send('required params missing')
     }
 })
 app.listen(process.env.PORT || 3000, () => {
