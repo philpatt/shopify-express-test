@@ -10,7 +10,7 @@ const request = require('request-promise')
 const apiKey = process.env.SHOPIFY_API_KEY
 const apiSecret = process.env.SHOPIFY_API_SECRET
 const scope = 'write_products';
-const forwardingAddress = "https://philpatterson.io" //replace this with your HTTPS forwarding address
+const forwardingAddress = "https://pattersonstore.myshopify.com" //replace this with your HTTPS forwarding address
 
 app.get('/',(req,res) => {
     res.send('Hello World!')
@@ -30,7 +30,28 @@ app.get('/shopify', (req,res)=>{
     }
 })
 app.get('/shopify/callback', (req,res)=>{
+    const { shop, hmac, code, state} = req.query;
+    const stateCookie = cookie.parse(req.headers.cookie).state;
 
+    if(state !== stateCookie){
+        return res.status(403).send('Request origin cannot be verified')
+    }
+    if (shop && hmac && code){
+        const map = Object.assign({}, req.query);
+        delete map['hmac'];
+        const message = querystring.stringify(map);
+        const generateHash = crypto
+            .createHmac('sha256', apiSecret)
+            .update(message)
+            .digest('hex');
+        
+        if(generateHash !== hmac){
+            return res.status(400).send('HMAC validation failed!');
+        }
+        res.status(200).send('HMAC validated');//replace with api call
+    } else {
+        res.status(400).send('Require parameters missing');
+    }
 })
 app.listen(process.env.PORT || 3000, () => {
     console.log('Example app listening on port 3000!');
