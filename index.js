@@ -10,7 +10,7 @@ const request = require('request-promise')
 const apiKey = process.env.SHOPIFY_API_KEY
 const apiSecret = process.env.SHOPIFY_API_SECRET
 const scope = 'write_products';
-const forwardingAddress = 'https://shopify-express.herokuapp.com/' //replace this with your HTTPS forwarding address
+const forwardingAddress = 'https://shopify-express.herokuapp.com' //replace this with your HTTPS forwarding address
 
 app.get('/',(req,res) => {
     res.send('Hello World!')
