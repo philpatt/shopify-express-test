@@ -69,7 +69,20 @@ app.get('/shopify/callback', (req,res) => {
         request.post(accessTokenRequestUrl, {json: accessTokenPayload})
         .then((accessTokenResponse) => {
             const accessToken = accessTokenResponse.access_token;
-            res.status(200).send('Got access token!')
+
+            const apiRequestUrl = 'https://' + shop + '/admin/products.json';
+
+            const apiRequestHeader = {
+                'X-Shopfify-Access-Token': accessToken
+            };
+
+            request.get(apiRequestUrl, { headers: apiRequestHeader})
+            .then((apiResponse) => {
+                res.end(apiResponse);
+            })
+            .catch((error) => {
+                res.status(error.statustCode).send(error.error.error_description);
+            });
         })
         .catch((error) => {
             res.status(error.statusCode).send(error.error.error_description);
