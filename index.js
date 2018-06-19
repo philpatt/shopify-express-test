@@ -40,9 +40,6 @@ app.get('/shopify', (req,res)=>{
 app.get('/shopify/callback', (req,res) => {
     const { shop, hmac, code, state } = req.query
     const stateCookie = cookie.parse(req.headers.cookie).state;
-    console.log('stateCookie:',stateCookie)
-    console.log('state:', state)
-
     if(state !== stateCookie){
         return res.status(403).send('Request origin cannot be verified')
     }
@@ -62,20 +59,20 @@ app.get('/shopify/callback', (req,res) => {
             return res.status(400).send('HMAC validation failed!');
         }
         const accessTokenRequestUrl = 'https://' + shop + '/admin/oauth/acces_token';
-        const accesTokenPayload = {
+        const accessTokenPayload = {
             client_id: apiKey,
             client_secret: apiSecret,
             code
         };
 
-        request.post(accessTokenRequestUrl, {json: accesTokenPayload})
+        request.post(accessTokenRequestUrl, {json: accessTokenPayload})
         .then((accessTokenResponse) => {
             const accessToken = accessTokenResponse.access_token;
             res.status(200).send('Got access token!')
         })
-        .catch((error)=>{
+        .catch((error) => {
             res.status(error.statusCode).send(error.error.error_description);
-        })
+        });
 
     } else {
         res.status(400).send('required params missing')
