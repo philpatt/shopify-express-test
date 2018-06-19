@@ -6,12 +6,17 @@ const cookie = require('cookie');
 const nonce = require('nonce');
 const querystring = require('querystring');
 const request = require('request-promise')
-
+const ShopifyToken = require('shopify-token')
 const apiKey = process.env.SHOPIFY_API_KEY
 const apiSecret = process.env.SHOPIFY_API_SECRET
 const scope = 'write_products';
 const forwardingAddress = 'https://shopify-express.herokuapp.com' //replace this with your HTTPS forwarding address
 
+const shopifyToken = new ShopifyToken({
+    sharedSecret: apiSecret,
+    redirectUri: forwardingAddress + '/shopify/callback',
+    apiKey: apiKey
+})
 app.get('/',(req,res) => {
     res.send('Hello World!')
 })
@@ -19,7 +24,7 @@ app.get('/shopify', (req,res)=>{
     const shop = req.query.shop
     console.log(shop)
     if(shop){
-        const state = nonce();
+        const state = shopifyToken.generateNonce();
         const redirectUri = forwardingAddress + '/shopify/callback';
         const installUrl = 'https://' + shop + '/admin/oauth/authorize?client_id=' + apiKey + '&scope=' + scope + '&state' + state + '&redirect_uri=' + redirectUri;
 
